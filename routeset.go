@@ -2,6 +2,7 @@ package routemod
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -134,21 +135,9 @@ func (rm *RouteSet) registerPostRoute(rt PostRoute) error {
 
 // definePostRoute defines the structure used for post routes
 func (rm *RouteSet) definePostRoute(w http.ResponseWriter, r *http.Request, rt PostRoute) {
-	bts, err := ioutil.ReadAll(r.Body)
+	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		e := HttpError{
-			Status:    http.StatusInternalServerError,
-			ErrorCode: "",
-			Message:   err.Error(),
-		}
-		e.write(rm.contentType, rm.parser, w)
-		return
-	}
-
-	myErr := rm.unmarshal(bts, rt)
-	if myErr != nil {
-		//log.Panicf("%+v", myErr)
-		myErr.write(rm.contentType, rm.parser, w)
+		err.write(rm.contentType, rm.parser, w)
 		return
 	}
 
@@ -269,27 +258,16 @@ func (rm *RouteSet) registerUpdateRoute(rt UpdateRoute) error {
 
 	rm.router.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		rm.defineUpdateRoute(w, r, rt)
-	}).Methods("UPDATE", "OPTIONS")
+	}).Methods("PUT", "OPTIONS")
 
 	return nil
 }
 
 // defineUpdateRoute defines the structure used for update routes
 func (rm *RouteSet) defineUpdateRoute(w http.ResponseWriter, r *http.Request, rt UpdateRoute) {
-	bts, err := ioutil.ReadAll(r.Body)
+	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		e := HttpError{
-			Status:    http.StatusInternalServerError,
-			ErrorCode: "",
-			Message:   err.Error(),
-		}
-		e.write(rm.contentType, rm.parser, w)
-		return
-	}
-
-	myErr := rm.unmarshal(bts, rt)
-	if myErr != nil {
-		myErr.write(rm.contentType, rm.parser, w)
+		err.write(rm.contentType, rm.parser, w)
 		return
 	}
 
@@ -328,20 +306,9 @@ func (rm *RouteSet) registerDeleteRoute(rt DeleteRoute) error {
 
 // defineUpdateRoute defines the structure used for update routes
 func (rm *RouteSet) defineDeleteRoute(w http.ResponseWriter, r *http.Request, rt DeleteRoute) {
-	bts, err := ioutil.ReadAll(r.Body)
+	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		e := HttpError{
-			Status:    http.StatusInternalServerError,
-			ErrorCode: "",
-			Message:   err.Error(),
-		}
-		e.write(rm.contentType, rm.parser, w)
-		return
-	}
-
-	myErr := rm.unmarshal(bts, rt)
-	if myErr != nil {
-		myErr.write(rm.contentType, rm.parser, w)
+		err.write(rm.contentType, rm.parser, w)
 		return
 	}
 
@@ -378,4 +345,17 @@ func (rm *RouteSet) marshal(data interface{}) ([]byte, *HttpError) {
 		}
 	}
 	return bts, nil
+}
+
+func (rm *RouteSet) readBody(r io.Reader, rt Typer) *HttpError {
+	bts, err := ioutil.ReadAll(r)
+	if err != nil {
+		return &HttpError{
+			Status:    http.StatusInternalServerError,
+			ErrorCode: "",
+			Message:   err.Error(),
+		}
+	}
+
+	return rm.unmarshal(bts, rt)
 }
