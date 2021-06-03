@@ -317,7 +317,7 @@ func (rm *RouteSet) registerDeleteRoute(rt DeleteRoute) error {
 	if subPath, ok := rt.(DeleteRouteRoutePath); ok {
 		path = rm.buildPath(subPath.DeleteRoutePath())
 	}
-	rm.logger.Info("registered update route at: %s", path)
+	rm.logger.Info("registered delete route at: %s", path)
 
 	rm.router.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		rm.defineDeleteRoute(w, r, rt)
