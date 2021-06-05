@@ -25,11 +25,10 @@ type MyType struct {
 type Example struct {
 	MyType
 
-	urlParams map[string]string `json:"-"`
+	urlParams map[string]string
 }
 
 func (e *Example) Get() (interface{}, *routemod.HttpError) {
-	fmt.Println("main.go:", e.urlParams)
 	return &Example{
 		MyType: MyType{
 			Name: "Hello",
@@ -55,7 +54,7 @@ func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
 				Name: "test1",
 				URL:  "test1",
 				Timings: Timings{
-					ID:        0,
+					ID:        1,
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: time.Now(),
@@ -67,7 +66,7 @@ func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
 				Name: "test2",
 				URL:  "test2",
 				Timings: Timings{
-					ID:        1,
+					ID:        2,
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 					DeletedAt: time.Now(),
