@@ -301,6 +301,60 @@ func TestRouteMachine_SetIdleTimeout(t *testing.T) {
 	}
 }
 
+func TestRouteMachine_AddMiddleware(t *testing.T) {
+	type fields struct {
+		addr     string
+		port     uint16
+		basePath string
+		loggable Loggable
+	}
+	type args struct {
+		mw Middleware
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "nil_values",
+			fields: fields{
+				addr:     "",
+				port:     0,
+				basePath: "/",
+				loggable: nil,
+			},
+			args: args{
+				mw: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "non_nil_values",
+			fields: fields{
+				addr:     "",
+				port:     0,
+				basePath: "/",
+				loggable: &exampleLogger{},
+			},
+			args: args{
+				mw: &exampleMiddleware{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rtm := NewRouteMachine(tt.fields.addr, tt.fields.port, tt.fields.basePath, tt.fields.loggable)
+
+			if err := rtm.AddMiddleware(tt.args.mw); (err != nil) && !tt.wantErr {
+				t.Errorf("RouteMachine.AddMiddleware() = %v, want %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestRouteMachine_Start(t *testing.T) {
 	type fields struct {
 		addr     string

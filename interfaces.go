@@ -110,3 +110,13 @@ type Parser interface {
 	// MimeType returns the associated mime type in string representation. A list of available MIME types can be found at: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	MimeType() string
 }
+
+// Middleware defines an interface that is used to inject a middleware
+type Middleware interface {
+	Middleware(http.Handler) http.Handler
+}
+
+// WithLogger provides an optional interface that is used to attach the logger to the route or middleware
+type WithLogger interface {
+	WithLogger(Loggable)
+}

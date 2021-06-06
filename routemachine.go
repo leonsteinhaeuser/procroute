@@ -11,15 +11,17 @@ import (
 )
 
 var (
-	ErrAddressNotSet           = errors.New("address not set")
-	ErrRouteSetNotPresent      = errors.New("missing routesets")
-	ErrNilRouteSetIsNotAllowed = errors.New("empty route set is not supported")
+	ErrAddressNotSet             = errors.New("address not set")
+	ErrRouteSetNotPresent        = errors.New("missing routesets")
+	ErrNilRouteSetIsNotAllowed   = errors.New("empty route set is not supported")
+	ErrNilMiddlewareIsNotAllowed = errors.New("nil middleware is not supported")
 )
 
 type RouteMachine struct {
-	server    *http.Server
-	routeSets []*RouteSet
-	router    *mux.Router
+	server      *http.Server
+	routeSets   []*RouteSet
+	router      *mux.Router
+	middlewares []mux.MiddlewareFunc
 
 	basePath string
 	logger   Loggable
@@ -70,17 +72,36 @@ func (r *RouteMachine) SetIdleTimeout(timeout time.Duration) *RouteMachine {
 	return r
 }
 
+// AddMiddleware injects a middleware just before an endpoint is touched.
+func (r *RouteMachine) AddMiddleware(next Middleware) error {
+	if next == nil {
+		return ErrNilMiddlewareIsNotAllowed
+	}
+
+	if lgg, ok := next.(WithLogger); ok {
+		r.logger.Info("adding logger to middleware")
+		lgg.WithLogger(r.logger)
+	}
+	r.middlewares = append(r.middlewares, next.Middleware)
+	return nil
+}
+
 // Start provides a method that starts a go routine to provides the http server
 func (r *RouteMachine) Start() error {
+	var err error
+
+	// check if starting requirements are set
 	if r.server == nil || r.server.Addr == "" {
 		return ErrAddressNotSet
 	}
 
+	// check if routeset requirements are set
 	if len(r.routeSets) < 1 {
 		return ErrRouteSetNotPresent
 	}
 
-	var err error
+	// initialize middlewares
+	r.router.Use(r.middlewares...)
 
 	// assign the router to each route set
 	for _, routeSet := range r.routeSets {

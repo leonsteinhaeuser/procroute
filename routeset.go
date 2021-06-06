@@ -74,6 +74,11 @@ func (rm *RouteSet) buildPath(uriPath ...string) string {
 func (rm *RouteSet) build() error {
 	rm.logger.Debug("compiling routes")
 	for _, routeSet := range rm.routeSet {
+		// check if the routeset implements the WithLogger interface
+		if wl, ok := routeSet.(WithLogger); ok {
+			wl.WithLogger(rm.logger)
+		}
+
 		// check if the routeset implements the GetRoute interface and if so, register such route
 		if rts, ok := routeSet.(GetRoute); ok {
 			if err := rm.registerGetRoute(rts); err != nil {
