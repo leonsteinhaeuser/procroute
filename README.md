@@ -6,14 +6,14 @@ Routemod serves the purpose of simplifying the creation of web-based application
 
 ## Getting started
 
-The main two entrypoints of the application are the following two: `routemod.NewRouteMachine` and `routemod.NewRouteSet`.
+The main two entrypoints of the application are the following two: [routemod.NewRouteMachine](routemachine.go#L28) and [routemod.NewRouteSet](routeset.go#L33).
 
 Great it seems simple, but how do i start?
 
-1. Implement the `routemod.Loggable` interface. You can find an example in the [logger.go](examples/logger.go) file.
-2. Implement the `routemod.Parser` interface. You can find an example in the [parser.go](examples/parser.go) file.
+1. Implement the [routemod.Loggable](logger.go#L3-L10) interface. You can find an example in the [logger.go](examples/logger.go) file.
+2. Implement the [routemod.Parser](interfaces.go#L103-L106) interface. You can find an example in the [parser.go](examples/parser.go) file.
 3. Implement one or more of the [route interfaces](interfaces.go#L12-L65). You can find an example in the [model.go](examples/model.go) file.
-4. Define a routing machine and routes. You can find an example in the [main.go](examples/main.go) file.
+4. Define a [routing machine](routemachine.go#L28) and [routes](routeset.go#L33). You can find an example in the [main.go](examples/main.go) file.
 
 When you start the example, you get an output like the following:
 
