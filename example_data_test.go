@@ -3,6 +3,7 @@ package routemod
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 )
 
 type exampleParser struct{}
@@ -50,7 +51,8 @@ type data struct {
 type getExample struct {
 	data *data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
 func (g *getExample) Get() (interface{}, *HttpError) {
@@ -65,10 +67,15 @@ func (f *getExample) SetUrlParams(val map[string]string) {
 	return
 }
 
+func (f *getExample) WithLogger(lggbl Loggable) {
+	f.logger = lggbl
+}
+
 type getAllExample struct {
 	data []data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
 func (g *getAllExample) GetAll() ([]interface{}, *HttpError) {
@@ -79,14 +86,19 @@ func (g *getAllExample) Type() interface{} {
 	return g.data
 }
 
-func (f *getAllExample) SetUrlParams(val map[string]string) {
+func (g *getAllExample) SetUrlParams(val map[string]string) {
 	return
+}
+
+func (g *getAllExample) WithLogger(lggbl Loggable) {
+	g.logger = lggbl
 }
 
 type postExample struct {
 	data *data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
 func (p *postExample) Post() *HttpError {
@@ -97,14 +109,19 @@ func (p *postExample) Type() interface{} {
 	return p.data
 }
 
-func (f *postExample) SetUrlParams(val map[string]string) {
+func (p *postExample) SetUrlParams(val map[string]string) {
 	return
+}
+
+func (p *postExample) WithLogger(lggbl Loggable) {
+	p.logger = lggbl
 }
 
 type updateExample struct {
 	data *data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
 func (u *updateExample) Update() *HttpError {
@@ -115,32 +132,42 @@ func (u *updateExample) Type() interface{} {
 	return u.data
 }
 
-func (f *updateExample) SetUrlParams(val map[string]string) {
+func (u *updateExample) SetUrlParams(val map[string]string) {
 	return
+}
+
+func (u *updateExample) WithLogger(lggbl Loggable) {
+	u.logger = lggbl
 }
 
 type deleteExample struct {
 	data *data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
-func (u *deleteExample) Delete() *HttpError {
-	return u.err
+func (d *deleteExample) Delete() *HttpError {
+	return d.err
 }
 
-func (u *deleteExample) Type() interface{} {
-	return u.data
+func (d *deleteExample) Type() interface{} {
+	return d.data
 }
 
-func (f *deleteExample) SetUrlParams(val map[string]string) {
+func (d *deleteExample) SetUrlParams(val map[string]string) {
 	return
+}
+
+func (d *deleteExample) WithLogger(lggbl Loggable) {
+	d.logger = lggbl
 }
 
 type fullExample struct {
 	data *data
 
-	err *HttpError
+	err    *HttpError
+	logger Loggable
 }
 
 func (f *fullExample) Get() (interface{}, *HttpError) {
@@ -189,4 +216,20 @@ func (f *fullExample) SetUrlParams(val map[string]string) {
 
 func (f *fullExample) Type() interface{} {
 	return f.data
+}
+
+func (f *fullExample) WithLogger(lggbl Loggable) {
+	f.logger = lggbl
+}
+
+type exampleMiddleware struct {
+	logger Loggable
+}
+
+func (e *exampleMiddleware) Middleware(h http.Handler) http.Handler {
+	return h
+}
+
+func (e *exampleMiddleware) WithLogger(lggbl Loggable) {
+	e.logger = lggbl
 }
