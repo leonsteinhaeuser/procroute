@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/leonsteinhaeuser/go-routemod"
@@ -21,14 +20,15 @@ type MyType struct {
 }
 
 // Define the type that implements the interfaces
-
 type Example struct {
 	MyType
 
 	urlParams map[string]string
+	logger    routemod.Loggable
 }
 
 func (e *Example) Get() (interface{}, *routemod.HttpError) {
+	e.logger.Info("get route hit")
 	return &Example{
 		MyType: MyType{
 			Name: "Hello",
@@ -48,6 +48,7 @@ func (e *Example) GetRoutePath() string {
 }
 
 func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
+	e.logger.Info("get all route hit")
 	return []interface{}{
 		Example{
 			MyType: MyType{
@@ -77,17 +78,17 @@ func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
 }
 
 func (e *Example) Post() *routemod.HttpError {
-	fmt.Printf("post: %+v\n", e.MyType)
+	e.logger.Info("post route hit: %+v", e.MyType)
 	return nil
 }
 
 func (e *Example) Update() *routemod.HttpError {
-	fmt.Printf("put: %+v\n", e.MyType)
+	e.logger.Info("update route hit: %+v", e.MyType)
 	return nil
 }
 
 func (e *Example) Delete() *routemod.HttpError {
-	fmt.Printf("delete: %+v\n", e.MyType)
+	e.logger.Info("delete route hit: %+v", e.MyType)
 	return nil
 }
 
@@ -101,4 +102,8 @@ func (e *Example) SetUrlParams(args map[string]string) {
 
 func (e *Example) Type() interface{} {
 	return e
+}
+
+func (e *Example) WithLogger(lggbl routemod.Loggable) {
+	e.logger = lggbl
 }
