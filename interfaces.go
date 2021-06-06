@@ -6,65 +6,65 @@ import (
 )
 
 var (
-	ErrHttpResponseWriterNotSet = errors.New("http response write is not set")
+	ErrHttpResponseWriterNotSet = errors.New("http response writer is not set")
 )
 
-// GetRoute provides the interface that is used for http get routes
+// GetRoute provides the interface that must be implemented to create a Get endpoint.
 type GetRoute interface {
 	Get() (interface{}, *HttpError)
 	Typer
 }
 
-// GetRoutePath defines an optional child path for the get endpoint
+// GetRoutePath defines an optional child interface that is used to customize route path.
 type GetRoutePath interface {
 	GetRoutePath() string
 }
 
-// GetAllRoute provides the interface that is used for http get all routes
+// GetAllRoute provides the interface that must be implemented to create a Get All endpoint.
 type GetAllRoute interface {
 	GetAll() ([]interface{}, *HttpError)
 	Typer
 }
 
-// GetAllRoutePath defines an optional child path for the get all endpoint
+// GetAllRoutePath defines an optional child interface that is used to customize route path.
 type GetAllRoutePath interface {
 	GetAllRoutePath() string
 }
 
-// PostRoute provides the interface that is used for http post routes
+// PostRoute provides the interface that must be implemented to create a Post endpoint.
 type PostRoute interface {
 	Post() *HttpError
 	Typer
 }
 
-// PostRouteRoutePath defines an optional child path for the post endpoint
+// PostRouteRoutePath defines an optional child interface that is used to customize route path.
 type PostRouteRoutePath interface {
 	PostRoutePath() string
 }
 
-// UpdateRoute provides the interface that is used for http update routes
+// UpdateRoute provides the interface that must be implemented to create an Update endpoint.
 type UpdateRoute interface {
 	Update() *HttpError
 	Typer
 }
 
-// UpdateRouteRoutePath defines an optional child path for the update endpoint
+// UpdateRouteRoutePath defines an optional child interface that is used to customize route path.
 type UpdateRouteRoutePath interface {
 	UpdateRoutePath() string
 }
 
-// DeleteRoute provides the interface that is used for http delete routes
+// DeleteRoute provides the interface that must be implemented to create a Delete endpoint.
 type DeleteRoute interface {
 	Delete() *HttpError
 	Typer
 }
 
-// DeleteRouteRoutePath defines an optional child path for the delete endpoint
+// DeleteRouteRoutePath defines an optional child interface that is used to customize route path.
 type DeleteRouteRoutePath interface {
 	DeleteRoutePath() string
 }
 
-// Typer provides a method that is used to create a new object based on the returned type. Ensure that the returned type is a pointer.
+// Typer represents an interface used to reference back to an object. Make sure that the returned type is a pointer to the object.
 //
 // Example:
 //  func (r *Example) Type() interface{} {return &MyModelType{}}
@@ -79,6 +79,7 @@ type HttpError struct {
 	Message   string
 }
 
+// write marshals the error message and sends it back to the client
 func (h *HttpError) write(contentType string, parser Parser, w http.ResponseWriter) error {
 	if w == nil {
 		return ErrHttpResponseWriterNotSet
@@ -96,11 +97,16 @@ func (h *HttpError) write(contentType string, parser Parser, w http.ResponseWrit
 
 // UrlParams represents an interface that must be implemented, if the route handles url params
 type UrlParams interface {
+	// SetUrlParam represents a method with which url-params can be passed that can later be used to identify resources.
 	SetUrlParams(args map[string]string)
 }
 
 // Parser provides the interface that must be implemented to marshal and unmarshal the data sent during http request and http responses
 type Parser interface {
+	// Unmarshal parses the encoded data and stores the result in the value pointed to by v. If v is nil or not a pointer, Unmarshal returns an error.
 	Unmarshal(data []byte, v interface{}) error
+	// Marshal returns the encoded data as byte slice.
 	Marshal(v interface{}) ([]byte, error)
+	// MimeType returns the associated mime type in string representation. A list of available MIME types can be found at: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+	MimeType() string
 }

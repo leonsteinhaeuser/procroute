@@ -15,6 +15,10 @@ func (e *exampleParser) Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
 }
 
+func (e *exampleParser) MimeType() string {
+	return "application/json"
+}
+
 type exampleParserError struct{}
 
 func (e *exampleParserError) Unmarshal(data []byte, v interface{}) error {
@@ -23,6 +27,10 @@ func (e *exampleParserError) Unmarshal(data []byte, v interface{}) error {
 
 func (e *exampleParserError) Marshal(v interface{}) ([]byte, error) {
 	return nil, errors.New("exampleParserError")
+}
+
+func (e *exampleParserError) MimeType() string {
+	return ""
 }
 
 type exampleLogger struct{}

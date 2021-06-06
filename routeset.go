@@ -20,21 +20,19 @@ var (
 
 // RouteSet defines a structure that is used to create an endpoint set based on the base path
 type RouteSet struct {
-	parser      Parser
-	contentType string
-	router      *mux.Router
-	basePath    string
+	parser   Parser
+	router   *mux.Router
+	basePath string
 
 	routeSet []interface{}
 	logger   Loggable
 }
 
 // NewRouteSet defines a new route machine that can be used to create http endpoints
-func NewRouteSet(contentType, basePath string, parser Parser) *RouteSet {
+func NewRouteSet(basePath string, parser Parser) *RouteSet {
 	return &RouteSet{
-		parser:      parser,
-		contentType: contentType,
-		basePath:    basePath,
+		parser:   parser,
+		basePath: basePath,
 	}
 }
 
@@ -137,7 +135,7 @@ func (rm *RouteSet) registerPostRoute(rt PostRoute) error {
 func (rm *RouteSet) definePostRoute(w http.ResponseWriter, r *http.Request, rt PostRoute) {
 	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		err.write(rm.contentType, rm.parser, w)
+		err.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
@@ -147,11 +145,11 @@ func (rm *RouteSet) definePostRoute(w http.ResponseWriter, r *http.Request, rt P
 
 	httpErr := rt.Post()
 	if httpErr != nil {
-		httpErr.write(rm.contentType, rm.parser, w)
+		httpErr.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
-	w.Header().Add("Content-Type", rm.contentType)
+	w.Header().Add("Content-Type", rm.parser.MimeType())
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -182,17 +180,17 @@ func (rm *RouteSet) defineGetRoute(w http.ResponseWriter, r *http.Request, rt Ge
 
 	data, httpErr := rt.Get()
 	if httpErr != nil {
-		httpErr.write(rm.contentType, rm.parser, w)
+		httpErr.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
 	bts, err := rm.marshal(data)
 	if err != nil {
-		err.write(rm.contentType, rm.parser, w)
+		err.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
-	w.Header().Add("Content-Type", rm.contentType)
+	w.Header().Add("Content-Type", rm.parser.MimeType())
 	w.WriteHeader(http.StatusOK)
 	w.Write(bts)
 }
@@ -224,7 +222,7 @@ func (rm *RouteSet) defineGetAllRoute(w http.ResponseWriter, r *http.Request, rt
 
 	data, httpErr := rt.GetAll()
 	if httpErr != nil {
-		httpErr.write(rm.contentType, rm.parser, w)
+		httpErr.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
@@ -235,11 +233,11 @@ func (rm *RouteSet) defineGetAllRoute(w http.ResponseWriter, r *http.Request, rt
 			ErrorCode: "",
 			Message:   err.Error(),
 		}
-		e.write(rm.contentType, rm.parser, w)
+		e.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
-	w.Header().Add("Content-Type", rm.contentType)
+	w.Header().Add("Content-Type", rm.parser.MimeType())
 	w.WriteHeader(http.StatusOK)
 	w.Write(bts)
 }
@@ -267,7 +265,7 @@ func (rm *RouteSet) registerUpdateRoute(rt UpdateRoute) error {
 func (rm *RouteSet) defineUpdateRoute(w http.ResponseWriter, r *http.Request, rt UpdateRoute) {
 	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		err.write(rm.contentType, rm.parser, w)
+		err.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
@@ -277,11 +275,11 @@ func (rm *RouteSet) defineUpdateRoute(w http.ResponseWriter, r *http.Request, rt
 
 	httpErr := rt.Update()
 	if httpErr != nil {
-		httpErr.write(rm.contentType, rm.parser, w)
+		httpErr.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
-	w.Header().Add("Content-Type", rm.contentType)
+	w.Header().Add("Content-Type", rm.parser.MimeType())
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -308,17 +306,17 @@ func (rm *RouteSet) registerDeleteRoute(rt DeleteRoute) error {
 func (rm *RouteSet) defineDeleteRoute(w http.ResponseWriter, r *http.Request, rt DeleteRoute) {
 	err := rm.readBody(r.Body, rt)
 	if err != nil {
-		err.write(rm.contentType, rm.parser, w)
+		err.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
 	httpErr := rt.Delete()
 	if httpErr != nil {
-		httpErr.write(rm.contentType, rm.parser, w)
+		httpErr.write(rm.parser.MimeType(), rm.parser, w)
 		return
 	}
 
-	w.Header().Add("Content-Type", rm.contentType)
+	w.Header().Add("Content-Type", rm.parser.MimeType())
 	w.WriteHeader(http.StatusOK)
 }
 

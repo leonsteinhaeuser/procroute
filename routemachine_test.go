@@ -103,7 +103,7 @@ func TestRouteMachine_AddRouteSet(t *testing.T) {
 				loggable: &exampleLogger{},
 			},
 			args: args{
-				routeSet: NewRouteSet("application/json", "/api", &exampleParser{}),
+				routeSet: NewRouteSet("/api", &exampleParser{}),
 			},
 			wantErr: false,
 		},
@@ -328,7 +328,7 @@ func TestRouteMachine_Start(t *testing.T) {
 			args: args{
 				routeMachine: func() *RouteMachine {
 					rm := NewRouteMachine("127.0.0.1", 7654, "/api", &exampleLogger{})
-					if err := rm.AddRouteSet(NewRouteSet("application/json", "/sample", &exampleParser{}).AddRoutes(&getExample{})); err != nil {
+					if err := rm.AddRouteSet(NewRouteSet("/sample", &exampleParser{}).AddRoutes(&getExample{})); err != nil {
 						panic(err)
 					}
 					return rm
