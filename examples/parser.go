@@ -11,3 +11,7 @@ func (j *JsonParser) Unmarshal(data []byte, v interface{}) error {
 func (j *JsonParser) Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
 }
+
+func (j *JsonParser) MimeType() string {
+	return "application/json"
+}

@@ -8,7 +8,7 @@ func main() {
 	logger := &ExampleLogger{}
 
 	rm := routemod.NewRouteMachine("0.0.0.0", 8080, "/api", logger)
-	rm.AddRouteSet(routemod.NewRouteSet("application/json", "/example", &JsonParser{}).AddRoutes(&Example{}))
+	rm.AddRouteSet(routemod.NewRouteSet("/example", &JsonParser{}).AddRoutes(&Example{}))
 
 	if err := rm.Start(); err != nil {
 		panic(err)
