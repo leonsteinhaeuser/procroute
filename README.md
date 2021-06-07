@@ -1,6 +1,10 @@
 # routemod
 
 [![unit-tests](https://github.com/leonsteinhaeuser/go-routemod/actions/workflows/test.yml/badge.svg)](https://github.com/leonsteinhaeuser/go-routemod/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/leonsteinhaeuser/go-routemod/branch/main/graph/badge.svg?token=3OEL9ZLQRM)](https://codecov.io/gh/leonsteinhaeuser/go-routemod)
+![GitHub issues](https://img.shields.io/github/issues/leonsteinhaeuser/go-routemod)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/leonsteinhaeuser/go-routemod)
+
 
 Routemod serves the purpose of simplifying the creation of web-based applications. The main goal was to create a framework that implements all the necessary http functions so that the end user can concentrate on the business logic.
 

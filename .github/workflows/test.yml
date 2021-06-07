@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      COVER_FILE: coverage.txt
     steps:
       - name: run go 1.16
         uses: actions/setup-go@v2
@@ -27,5 +28,8 @@ jobs:
 
       - name: Test
         run: |
-          go test -race -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out
+          go test -race -coverprofile=$COVER_FILE -covermode=atomic $(go list ./... | grep -v examples)
+
+      - name: Code cov
+        shell: bash
+        run: bash <(curl -s https://codecov.io/bash)
