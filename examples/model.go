@@ -29,16 +29,14 @@ type Example struct {
 
 func (e *Example) Get() (interface{}, *procroute.HttpError) {
 	e.logger.Info("get route hit")
-	return &Example{
-		MyType: MyType{
-			Name: "Hello",
-			URL:  "example.local",
-			Timings: Timings{
-				ID:        1,
-				CreatedAt: time.Now().UTC(),
-				UpdatedAt: time.Now().UTC(),
-				DeletedAt: time.Now().UTC(),
-			},
+	return MyType{
+		Name: "Hello",
+		URL:  "example.local",
+		Timings: Timings{
+			ID:        1,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			DeletedAt: time.Now().UTC(),
 		},
 	}, nil
 }
@@ -50,28 +48,24 @@ func (e *Example) GetRoutePath() string {
 func (e *Example) GetAll() ([]interface{}, *procroute.HttpError) {
 	e.logger.Info("get all route hit")
 	return []interface{}{
-		Example{
-			MyType: MyType{
-				Name: "test1",
-				URL:  "test1",
-				Timings: Timings{
-					ID:        1,
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-					DeletedAt: time.Now(),
-				},
+		MyType{
+			Name: "test1",
+			URL:  "test1",
+			Timings: Timings{
+				ID:        1,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: time.Now(),
 			},
 		},
-		Example{
-			MyType: MyType{
-				Name: "test2",
-				URL:  "test2",
-				Timings: Timings{
-					ID:        2,
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-					DeletedAt: time.Now(),
-				},
+		MyType{
+			Name: "test2",
+			URL:  "test2",
+			Timings: Timings{
+				ID:        2,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				DeletedAt: time.Now(),
 			},
 		},
 	}, nil

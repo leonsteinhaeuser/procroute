@@ -5,9 +5,7 @@ import (
 )
 
 func main() {
-	logger := &ExampleLogger{}
-
-	rm := procroute.NewRouteMachine("0.0.0.0", 8080, "/api", logger)
+	rm := procroute.NewRouteMachine("0.0.0.0", 8080, "/api", &ExampleLogger{})
 	rm.AddRouteSet(procroute.NewRouteSet("/example", &JsonParser{}).AddRoutes(&Example{}))
 	rm.AddMiddleware(&MyExampleMiddleware{})
 
