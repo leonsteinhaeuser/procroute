@@ -1,4 +1,4 @@
-package routemod
+package procroute
 
 type Loggable interface {
 	Trace(format string, v ...interface{})

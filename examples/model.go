@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/leonsteinhaeuser/go-routemod"
+	"github.com/leonsteinhaeuser/procroute"
 )
 
 type Timings struct {
@@ -24,10 +24,10 @@ type Example struct {
 	MyType
 
 	urlParams map[string]string
-	logger    routemod.Loggable
+	logger    procroute.Loggable
 }
 
-func (e *Example) Get() (interface{}, *routemod.HttpError) {
+func (e *Example) Get() (interface{}, *procroute.HttpError) {
 	e.logger.Info("get route hit")
 	return &Example{
 		MyType: MyType{
@@ -47,7 +47,7 @@ func (e *Example) GetRoutePath() string {
 	return "/{id}"
 }
 
-func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
+func (e *Example) GetAll() ([]interface{}, *procroute.HttpError) {
 	e.logger.Info("get all route hit")
 	return []interface{}{
 		Example{
@@ -77,17 +77,17 @@ func (e *Example) GetAll() ([]interface{}, *routemod.HttpError) {
 	}, nil
 }
 
-func (e *Example) Post() *routemod.HttpError {
+func (e *Example) Post() *procroute.HttpError {
 	e.logger.Info("post route hit: %+v", e.MyType)
 	return nil
 }
 
-func (e *Example) Update() *routemod.HttpError {
+func (e *Example) Update() *procroute.HttpError {
 	e.logger.Info("update route hit: %+v", e.MyType)
 	return nil
 }
 
-func (e *Example) Delete() *routemod.HttpError {
+func (e *Example) Delete() *procroute.HttpError {
 	e.logger.Info("delete route hit: %+v", e.MyType)
 	return nil
 }
@@ -104,6 +104,6 @@ func (e *Example) Type() interface{} {
 	return e
 }
 
-func (e *Example) WithLogger(lggbl routemod.Loggable) {
+func (e *Example) WithLogger(lggbl procroute.Loggable) {
 	e.logger = lggbl
 }

@@ -1,21 +1,22 @@
-# routemod
+# procroute
 
-[![unit-tests](https://github.com/leonsteinhaeuser/go-routemod/actions/workflows/test.yml/badge.svg)](https://github.com/leonsteinhaeuser/go-routemod/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/leonsteinhaeuser/go-routemod/branch/main/graph/badge.svg?token=3OEL9ZLQRM)](https://codecov.io/gh/leonsteinhaeuser/go-routemod)
-![GitHub issues](https://img.shields.io/github/issues/leonsteinhaeuser/go-routemod)
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/leonsteinhaeuser/go-routemod)
+[![unit-tests](https://github.com/leonsteinhaeuser/procroute/actions/workflows/test.yml/badge.svg)](https://github.com/leonsteinhaeuser/procroute/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/leonsteinhaeuser/procroute/branch/main/graph/badge.svg?token=3OEL9ZLQRM)](https://codecov.io/gh/leonsteinhaeuser/procroute)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/leonsteinhaeuser/procroute)
+![GitHub issues](https://img.shields.io/github/issues-raw/leonsteinhaeuser/procroute)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/leonsteinhaeuser/procroute)
+[![Godoc reference](https://godoc.org/github.com/leonsteinhaeuser/procroute?status.svg)](http://godoc.org/github.com/leonsteinhaeuser/procroute)
 
-
-Routemod serves the purpose of simplifying the creation of web-based applications. The main goal was to create a framework that implements all the necessary http functions so that the end user can concentrate on the business logic.
+Procroute serves the purpose of simplifying the creation of web-based applications. The main goal was to create a framework that implements all the necessary http functions so that the end user can concentrate on the business logic.
 
 ## Getting started
 
-The main two entrypoints of the application are the following two: [routemod.NewRouteMachine](routemachine.go#L28) and [routemod.NewRouteSet](routeset.go#L33).
+The main two entrypoints of the application are the following two: [procroute.NewRouteMachine](routemachine.go#L28) and [procroute.NewRouteSet](routeset.go#L33).
 
 Great it seems simple, but how do i start?
 
-1. Implement the [routemod.Loggable](logger.go#L3-L10) interface. You can find an example in the [logger.go](examples/logger.go) file.
-2. Implement the [routemod.Parser](interfaces.go#L103-L106) interface. You can find an example in the [parser.go](examples/parser.go) file.
+1. Implement the [procroute.Loggable](logger.go#L3-L10) interface. You can find an example in the [logger.go](examples/logger.go) file.
+2. Implement the [procroute.Parser](interfaces.go#L103-L106) interface. You can find an example in the [parser.go](examples/parser.go) file.
 3. Implement one or more of the [route interfaces](interfaces.go#L12-L65). You can find an example in the [model.go](examples/model.go) file.
 4. Define a [routing machine](routemachine.go#L28) and [routes](routeset.go#L33). You can find an example in the [main.go](examples/main.go) file.
 

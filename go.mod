@@ -1,4 +1,4 @@
-module github.com/leonsteinhaeuser/go-routemod
+module github.com/leonsteinhaeuser/procroute
 
 go 1.16
 

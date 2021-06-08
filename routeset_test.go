@@ -1,4 +1,4 @@
-package routemod
+package procroute
 
 import (
 	"net/http"

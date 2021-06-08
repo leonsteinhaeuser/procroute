@@ -3,11 +3,11 @@ package main
 import (
 	"net/http"
 
-	"github.com/leonsteinhaeuser/go-routemod"
+	"github.com/leonsteinhaeuser/procroute"
 )
 
 type MyExampleMiddleware struct {
-	logger routemod.Loggable
+	logger procroute.Loggable
 }
 
 func (m *MyExampleMiddleware) Middleware(next http.Handler) http.Handler {
@@ -17,6 +17,6 @@ func (m *MyExampleMiddleware) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-func (m *MyExampleMiddleware) WithLogger(lggbl routemod.Loggable) {
+func (m *MyExampleMiddleware) WithLogger(lggbl procroute.Loggable) {
 	m.logger = lggbl
 }
