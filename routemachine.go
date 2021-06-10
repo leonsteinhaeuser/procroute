@@ -17,6 +17,7 @@ var (
 	ErrNilMiddlewareIsNotAllowed = errors.New("nil middleware is not supported")
 )
 
+// RouteMachine represents the manager type used to create and operate endpoints.
 type RouteMachine struct {
 	server      *http.Server
 	routeSets   []*RouteSet
@@ -27,6 +28,8 @@ type RouteMachine struct {
 	logger   Loggable
 }
 
+// NewRouteMachine is a constructor that creates a route machine based on the settings passed as parameters.
+// If the port or loggable is not set correctly, you will get errors during execution.
 func NewRouteMachine(addr string, port uint16, basePath string, loggable Loggable) *RouteMachine {
 	return &RouteMachine{
 		server: &http.Server{
