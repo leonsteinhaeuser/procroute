@@ -1,5 +1,7 @@
 package procroute
 
+// Loggable defines the interface to pass a logger to the RouteMachine.
+// The logger can be used later by implementing the WithLogger interface.
 type Loggable interface {
 	Trace(format string, v ...interface{})
 	Debug(format string, v ...interface{})

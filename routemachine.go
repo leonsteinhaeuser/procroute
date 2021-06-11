@@ -42,82 +42,87 @@ func NewRouteMachine(addr string, port uint16, basePath string, loggable Loggabl
 }
 
 // AddRouteSet provides a method to register a new RouteSet within the route machine
-func (r *RouteMachine) AddRouteSet(routeSet *RouteSet) error {
+func (rm *RouteMachine) AddRouteSet(routeSet *RouteSet) error {
 	if routeSet == nil {
 		return ErrNilRouteSetIsNotAllowed
 	}
 
-	routeSet.withLogger(r.logger).withRouterBasePath(r.basePath).withRouter(r.router)
+	routeSet.withLogger(rm.logger).withRouterBasePath(rm.basePath).withRouter(rm.router)
 
 	if err := routeSet.build(); err != nil {
 		return err
 	}
 
-	r.routeSets = append(r.routeSets, routeSet)
+	rm.routeSets = append(rm.routeSets, routeSet)
 	return nil
 }
 
 // SetReadTimeout provides a method that changes the read timeout within the http server
-func (r *RouteMachine) SetReadTimeout(timeout time.Duration) *RouteMachine {
-	r.server.ReadTimeout = timeout
-	return r
+func (rm *RouteMachine) SetReadTimeout(timeout time.Duration) *RouteMachine {
+	rm.server.ReadTimeout = timeout
+	return rm
 }
 
 // SetReadHeaderTimeout provides a method that changes the read header timeout within the http server
-func (r *RouteMachine) SetReadHeaderTimeout(timeout time.Duration) *RouteMachine {
-	r.server.ReadHeaderTimeout = timeout
-	return r
+func (rm *RouteMachine) SetReadHeaderTimeout(timeout time.Duration) *RouteMachine {
+	rm.server.ReadHeaderTimeout = timeout
+	return rm
 }
 
 // SetIdleTimeout provides a method that changes the idle timeout within the http server
-func (r *RouteMachine) SetIdleTimeout(timeout time.Duration) *RouteMachine {
-	r.server.IdleTimeout = timeout
-	return r
+func (rm *RouteMachine) SetIdleTimeout(timeout time.Duration) *RouteMachine {
+	rm.server.IdleTimeout = timeout
+	return rm
 }
 
 // AddMiddleware injects a middleware just before an endpoint is touched.
-func (r *RouteMachine) AddMiddleware(next Middleware) error {
+func (rm *RouteMachine) AddMiddleware(next Middleware) error {
 	if next == nil {
 		return ErrNilMiddlewareIsNotAllowed
 	}
 
 	if lgg, ok := next.(WithLogger); ok {
-		r.logger.Info("adding logger to middleware")
-		lgg.WithLogger(r.logger)
+		rm.logger.Info("adding logger to middleware")
+		lgg.WithLogger(rm.logger)
 	}
-	r.middlewares = append(r.middlewares, next.Middleware)
+	rm.middlewares = append(rm.middlewares, next.Middleware)
 	return nil
 }
 
-// Start provides a method that starts a go routine to provides the http server
-func (r *RouteMachine) Start() error {
+// Start provides a method that starts a go routine with the http server
+//
+// Possible errors:
+//  - ErrAddressNotSet
+//  - ErrRouteSetNotPresent
+//  - socket related errors
+func (rm *RouteMachine) Start() error {
 	var err error
 
 	// check if starting requirements are set
-	if r.server == nil || r.server.Addr == "" {
+	if rm.server == nil || rm.server.Addr == "" {
 		return ErrAddressNotSet
 	}
 
 	// check if routeset requirements are set
-	if len(r.routeSets) < 1 {
+	if len(rm.routeSets) < 1 {
 		return ErrRouteSetNotPresent
 	}
 
 	// initialize middlewares
-	r.router.Use(r.middlewares...)
+	rm.router.Use(rm.middlewares...)
 
 	// assign the router to each route set
-	for _, routeSet := range r.routeSets {
-		routeSet.router = r.router
+	for _, routeSet := range rm.routeSets {
+		routeSet.router = rm.router
 	}
 
 	// assign the router
-	r.server.Handler = r.router
+	rm.server.Handler = rm.router
 
 	afterCh := time.After(500 * time.Millisecond)
 	go func() {
-		if err = r.server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			r.logger.Error("server closed unexpectedly with error: %w", err)
+		if err = rm.server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			rm.logger.Error("server closed unexpectedly with error: %w", err)
 			return
 		}
 	}()
@@ -125,11 +130,11 @@ func (r *RouteMachine) Start() error {
 	if err != nil {
 		return err
 	}
-	r.logger.Info("server started on: %s", r.server.Addr)
+	rm.logger.Info("server started on: %s", rm.server.Addr)
 	return nil
 }
 
-// Stop delegates the stop signal to http.Server.Shutdown
-func (r *RouteMachine) Stop() error {
-	return r.server.Shutdown(context.Background())
+// Stop delegates the stop signal to http.server.Shutdown
+func (rm *RouteMachine) Stop() error {
+	return rm.server.Shutdown(context.Background())
 }
