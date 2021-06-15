@@ -371,9 +371,39 @@ func TestRouteMachine_Start(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "nil_values",
+			name: "empty_address_and_zero_port",
+			args: args{
+				routeMachine: NewRouteMachine("", 7654, "/api", &exampleLogger{}),
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty_address",
+			args: args{
+				routeMachine: NewRouteMachine("", 7654, "/api", &exampleLogger{}),
+			},
+			wantErr: true,
+		},
+		{
+			name: "zero_port",
+			args: args{
+				routeMachine: NewRouteMachine("127.0.0.1", 0, "/api", &exampleLogger{}),
+			},
+			wantErr: true,
+		},
+		{
+			name: "without_routeset",
 			args: args{
 				routeMachine: NewRouteMachine("127.0.0.1", 7654, "/api", &exampleLogger{}),
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil",
+			args: args{
+				routeMachine: &RouteMachine{
+					server: &http.Server{},
+				},
 			},
 			wantErr: true,
 		},

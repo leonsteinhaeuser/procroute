@@ -1,6 +1,8 @@
 package procroute
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -665,7 +667,6 @@ func TestRouteSet_build(t *testing.T) {
 			},
 			wantErr: false,
 		},
-
 		{
 			name: "with_error_parser",
 			fields: fields{
@@ -808,6 +809,7 @@ func TestRouteSet_definePostRoute(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &postExample{
+					data: &data{},
 					err: &HttpError{
 						Status:    500,
 						ErrorCode: "asd",
@@ -838,6 +840,7 @@ func TestRouteSet_definePostRoute(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &postExample{
+					data: &data{},
 					err: &HttpError{
 						Status:    500,
 						ErrorCode: "asd",
@@ -856,11 +859,40 @@ func TestRouteSet_definePostRoute(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: httptest.NewRequest("POST", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &fullExample{
+					data: &data{},
 					err: &HttpError{
 						Status:    500,
 						ErrorCode: "asd",
 						Message:   "expected error during test",
 					},
+				},
+			},
+		},
+		{
+			name: "nil",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("POST", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &postExample{
+					data: &data{},
+				},
+			},
+		},
+		{
+			name: "nil_error_parser",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParserError{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("POST", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &postExample{
+					data: &data{},
 				},
 			},
 		},
@@ -1057,6 +1089,34 @@ func TestRouteSet_defineGetRoute(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nil",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &getExample{
+					data: &data{},
+				},
+			},
+		},
+		{
+			name: "nil_error_parser",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParserError{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &getExample{
+					data: &data{},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1235,6 +1295,34 @@ func TestRouteSet_defineGetAllRoute(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nil",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &getAllExample{
+					data: []data{},
+				},
+			},
+		},
+		{
+			name: "nil_error_parser",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParserError{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &getAllExample{
+					data: []data{},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1341,7 +1429,7 @@ func TestRouteSet_defineUpdateRoute(t *testing.T) {
 			},
 			args: args{
 				w: httptest.NewRecorder(),
-				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				r: httptest.NewRequest("PUT", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &updateExample{
 					data: &data{},
 				},
@@ -1355,7 +1443,7 @@ func TestRouteSet_defineUpdateRoute(t *testing.T) {
 			},
 			args: args{
 				w: httptest.NewRecorder(),
-				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				r: httptest.NewRequest("PUT", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &updateExample{
 					err: &HttpError{
 						Status:    500,
@@ -1373,7 +1461,7 @@ func TestRouteSet_defineUpdateRoute(t *testing.T) {
 			},
 			args: args{
 				w:  httptest.NewRecorder(),
-				r:  httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				r:  httptest.NewRequest("PUT", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &updateExample{},
 			},
 		},
@@ -1385,7 +1473,7 @@ func TestRouteSet_defineUpdateRoute(t *testing.T) {
 			},
 			args: args{
 				w: httptest.NewRecorder(),
-				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				r: httptest.NewRequest("PUT", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &updateExample{
 					err: &HttpError{
 						Status:    500,
@@ -1403,12 +1491,50 @@ func TestRouteSet_defineUpdateRoute(t *testing.T) {
 			},
 			args: args{
 				w: httptest.NewRecorder(),
-				r: httptest.NewRequest("GET", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				r: httptest.NewRequest("PUT", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
 				rt: &fullExample{
 					err: &HttpError{
 						Status:    500,
 						ErrorCode: "asd",
 						Message:   "expected error during test",
+					},
+				},
+			},
+		},
+		{
+			name: "nil",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("PUT", "/{id}", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &updateExample{
+					data: &data{},
+					err: &HttpError{
+						Status:    500,
+						ErrorCode: "",
+						Message:   "oops",
+					},
+				},
+			},
+		},
+		{
+			name: "nil_error_parser",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("PUT", "/{id}", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &updateExample{
+					data: &data{},
+					err: &HttpError{
+						Status:    500,
+						ErrorCode: "",
+						Message:   "oops",
 					},
 				},
 			},
@@ -1591,6 +1717,44 @@ func TestRouteSet_defineDeleteRoute(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "nil",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("DELETE", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &deleteExample{
+					data: &data{},
+					err: &HttpError{
+						Status:    500,
+						ErrorCode: "asd",
+						Message:   "expected error during test",
+					},
+				},
+			},
+		},
+		{
+			name: "nil_error_parser",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParserError{},
+			},
+			args: args{
+				w: httptest.NewRecorder(),
+				r: httptest.NewRequest("DELETE", "/", strings.NewReader(`{"name": "sample2", "value": 2}`)),
+				rt: &deleteExample{
+					data: &data{},
+					err: &HttpError{
+						Status:    500,
+						ErrorCode: "asd",
+						Message:   "expected error during test",
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1702,6 +1866,92 @@ func TestRouteSet_marshal(t *testing.T) {
 			_, httperr := rm.marshal(tt.args.data)
 			if httperr != nil && !tt.wantError {
 				t.Errorf("RouteSet.marshal() got = %v, want %v", httperr, tt.wantError)
+			}
+		})
+	}
+}
+
+func TestRouteSet_readBody(t *testing.T) {
+	type fields struct {
+		basePath string
+		parser   Parser
+	}
+	type args struct {
+		r  io.Reader
+		rt Typer
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test_1",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				r:  bytes.NewBuffer([]byte("")),
+				rt: &getExample{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test_2",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				r:  bytes.NewBuffer(nil),
+				rt: &getExample{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test_3",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				r:  bytes.NewBuffer(httptest.NewRecorder().Body.Bytes()),
+				rt: &getExample{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test_4",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				r:  bytes.NewBuffer([]byte(`{"name": "sample2", "value": 2}`)),
+				rt: &getExample{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test_5",
+			fields: fields{
+				basePath: "/",
+				parser:   &exampleParser{},
+			},
+			args: args{
+				r:  bytes.NewBuffer([]byte(`{"name": "sample2", "value": 2}`)),
+				rt: &getExample{},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rs := NewRouteSet(tt.fields.basePath, tt.fields.parser)
+			if got := rs.readBody(tt.args.r, tt.args.rt); (got != nil) && !tt.wantErr {
+				t.Errorf("RouteSet.readBody() = %v, want %v", got, tt.wantErr)
 			}
 		})
 	}
