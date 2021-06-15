@@ -9,4 +9,4 @@ comment:
   - "M3GmRUVDUZcwg8nK1GmvERHAttwdAYVH" # set it to M3GmRUVDUZcwg8nK1GmvERHAttwdAYVH so that no comments are written.
 
 ignore:
-  - "examples/*.go"
+  - "examples/"
