@@ -1,5 +1,7 @@
 package procroute
 
+import "net/http"
+
 // GetRoute provides the interface that must be implemented to create a Get endpoint.
 type GetRoute interface {
 	// Get represents the method that contains the business logic for receiving a resource.
@@ -207,6 +209,35 @@ type DeleteRouteRoutePath interface {
 	//  	return "/delete"
 	//  }
 	DeleteRoutePath() string
+}
+
+// RawRoute provides the interface that must be implemented to create a Raw endpoint.
+type RawRoute interface {
+	// Raw represents the method that does nothing for you.
+	// Any logic must be handled by the user itself.
+	// This type can be used when a functionality is missing by this framework.
+	Raw(w http.ResponseWriter, r *http.Request)
+	// HttpMethods must returns a slice of http methods procroute should use to register the route.
+	// Example:
+	//  type MyType struct {}
+	//
+	//  func (m *MyType) HttpMethods() string {
+	//  	return []string{"GET","OPTIONS"}
+	//  }
+	HttpMethods() []string
+}
+
+// RawRouteRoutePath defines an optional child interface that is used to customize route path.
+type RawRouteRoutePath interface {
+	// RawRoutePath represents an optional method that can be set to define a custom path for the delete route.
+	//
+	// Example:
+	//  type MyType struct {}
+	//
+	//  func (m *MyType) RawRoutePath() string {
+	//  	return "/raw"
+	//  }
+	RawRoutePath() string
 }
 
 // Typer represents an interface used to reference back to an object.

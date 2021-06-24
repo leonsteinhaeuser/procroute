@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/leonsteinhaeuser/procroute"
@@ -88,6 +89,18 @@ func (e *Example) Delete() *procroute.HttpError {
 
 func (e *Example) DeleteRoutePath() string {
 	return "/{id}"
+}
+
+func (e *Example) Raw(w http.ResponseWriter, r *http.Request) {
+	e.logger.Debug("URL values: %+v", r.URL.Query())
+}
+
+func (e *Example) HttpMethods() []string {
+	return []string{"GET", "OPTIONS"}
+}
+
+func (e *Example) RawRoutePath() string {
+	return "/{id}/raw"
 }
 
 func (e *Example) SetUrlParams(args map[string]string) {
