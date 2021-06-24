@@ -1765,6 +1765,79 @@ func TestRouteSet_defineDeleteRoute(t *testing.T) {
 	}
 }
 
+func TestRouteSet_registerRawRoute(t *testing.T) {
+	type fields struct {
+		parser   Parser
+		router   *mux.Router
+		basePath string
+		routeSet []interface{}
+		logger   Loggable
+	}
+	type args struct {
+		rt RawRoute
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test_nil_data",
+			fields: fields{
+				parser:   nil,
+				router:   nil,
+				routeSet: []interface{}{},
+				logger:   nil,
+			},
+			args: args{
+				rt: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "test_non_nil_data_1",
+			fields: fields{
+				parser:   &exampleParser{},
+				router:   mux.NewRouter(),
+				routeSet: []interface{}{},
+				logger:   &exampleLogger{},
+			},
+			args: args{
+				rt: &rawExample{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "test_non_nil_data_2",
+			fields: fields{
+				parser:   &exampleParser{},
+				router:   mux.NewRouter(),
+				routeSet: []interface{}{},
+				logger:   &exampleLogger{},
+			},
+			args: args{
+				rt: &fullExample{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rm := &RouteSet{
+				parser:   tt.fields.parser,
+				router:   tt.fields.router,
+				basePath: tt.fields.basePath,
+				routeSet: tt.fields.routeSet,
+				logger:   tt.fields.logger,
+			}
+			if err := rm.registerRawRoute(tt.args.rt); (err != nil) != tt.wantErr {
+				t.Errorf("RouteSet.registerRawRoute() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestRouteSet_unmarshal(t *testing.T) {
 	type fields struct {
 		parser Parser

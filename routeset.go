@@ -154,6 +154,13 @@ func (rs *RouteSet) build() error {
 				return err
 			}
 		}
+
+		// check if the routeset implements the RawRoute interface and if so, register such route
+		if rts, ok := routeSet.(RawRoute); ok {
+			if err := rs.registerRawRoute(rts); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -364,6 +371,25 @@ func (rs *RouteSet) defineDeleteRoute(w http.ResponseWriter, r *http.Request, rt
 
 	w.Header().Add("Content-Type", rs.parser.MimeType())
 	w.WriteHeader(http.StatusOK)
+}
+
+// registerRawRoute creates a new raw route
+func (rs *RouteSet) registerRawRoute(rt RawRoute) error {
+	if rt == nil {
+		return ErrDeleteRouteIsNil
+	}
+
+	path := rs.buildPath()
+	if subPath, ok := rt.(RawRouteRoutePath); ok {
+		path = rs.buildPath(subPath.RawRoutePath())
+	}
+	rs.logger.Info("registered raw route at: %s", path)
+
+	rs.router.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		rt.Raw(w, r)
+	}).Methods(rt.HttpMethods()...)
+
+	return nil
 }
 
 // unmarshal unmarshals the byte slice into the provided Typer interface and writes an error back to the client, if the marshalling failed

@@ -163,6 +163,30 @@ func (d *deleteExample) WithLogger(lggbl Loggable) {
 	d.logger = lggbl
 }
 
+type rawExample struct {
+	data *data
+
+	err    *HttpError
+	logger Loggable
+}
+
+func (d *rawExample) Raw(w http.ResponseWriter, r *http.Request) {
+	d.logger.Info("raw hit")
+	return
+}
+
+func (d *rawExample) HttpMethods() []string {
+	return []string{"GET", "OPTIONS"}
+}
+
+func (d *rawExample) RawRoutePath() string {
+	return "/raw"
+}
+
+func (d *rawExample) WithLogger(lggbl Loggable) {
+	d.logger = lggbl
+}
+
 type fullExample struct {
 	data *data
 
@@ -208,6 +232,19 @@ func (f *fullExample) Delete() *HttpError {
 
 func (f *fullExample) DeleteRoutePath() string {
 	return "/all"
+}
+
+func (f *fullExample) Raw(w http.ResponseWriter, r *http.Request) {
+	f.logger.Info("raw hit")
+	return
+}
+
+func (f *fullExample) HttpMethods() []string {
+	return []string{"GET", "OPTIONS"}
+}
+
+func (f *fullExample) RawRoutePath() string {
+	return "/raw"
 }
 
 func (f *fullExample) SetUrlParams(val map[string]string) {
