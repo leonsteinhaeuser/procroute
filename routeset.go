@@ -186,17 +186,13 @@ func (rs *RouteSet) registerPostRoute(rt PostRoute) error {
 
 // definePostRoute defines the structure used for post routes
 func (rs *RouteSet) definePostRoute(w http.ResponseWriter, r *http.Request, rt PostRoute) {
-	err := rs.readBody(r.Body, rt)
+	request, err := rs.doHttpOp(rt, r)
 	if err != nil {
 		err.write(rs.parser.MimeType(), rs.parser, w)
 		return
 	}
 
-	if m, ok := rt.(UrlParams); ok {
-		m.SetUrlParams(mux.Vars(r))
-	}
-
-	httpErr := rt.Post()
+	httpErr := rt.Post(request)
 	if httpErr != nil {
 		httpErr.write(rs.parser.MimeType(), rs.parser, w)
 		return
@@ -227,11 +223,13 @@ func (rs *RouteSet) registerGetRoute(rt GetRoute) error {
 
 // defineGetRoute defines the structure used for get routes
 func (rs *RouteSet) defineGetRoute(w http.ResponseWriter, r *http.Request, rt GetRoute) {
-	if m, ok := rt.(UrlParams); ok {
-		m.SetUrlParams(mux.Vars(r))
+	request, err := rs.doHttpOp(rt, r)
+	if err != nil {
+		err.write(rs.parser.MimeType(), rs.parser, w)
+		return
 	}
 
-	data, httpErr := rt.Get()
+	data, httpErr := rt.Get(request)
 	if httpErr != nil {
 		httpErr.write(rs.parser.MimeType(), rs.parser, w)
 		return
@@ -269,24 +267,21 @@ func (rs *RouteSet) registerGetAllRoute(rt GetAllRoute) error {
 
 // defineGetAllRoute defines the structure used for get all routes
 func (rs *RouteSet) defineGetAllRoute(w http.ResponseWriter, r *http.Request, rt GetAllRoute) {
-	if m, ok := rt.(UrlParams); ok {
-		m.SetUrlParams(mux.Vars(r))
+	request, err := rs.doHttpOp(rt, r)
+	if err != nil {
+		err.write(rs.parser.MimeType(), rs.parser, w)
+		return
 	}
 
-	data, httpErr := rt.GetAll()
+	data, httpErr := rt.GetAll(request)
 	if httpErr != nil {
 		httpErr.write(rs.parser.MimeType(), rs.parser, w)
 		return
 	}
 
-	bts, err := rs.parser.Marshal(data)
+	bts, err := rs.marshal(data)
 	if err != nil {
-		e := HttpError{
-			Status:    http.StatusInternalServerError,
-			ErrorCode: "",
-			Message:   err.Error(),
-		}
-		e.write(rs.parser.MimeType(), rs.parser, w)
+		err.write(rs.parser.MimeType(), rs.parser, w)
 		return
 	}
 
@@ -316,17 +311,13 @@ func (rs *RouteSet) registerUpdateRoute(rt UpdateRoute) error {
 
 // defineUpdateRoute defines the structure used for update routes
 func (rs *RouteSet) defineUpdateRoute(w http.ResponseWriter, r *http.Request, rt UpdateRoute) {
-	err := rs.readBody(r.Body, rt)
+	request, err := rs.doHttpOp(rt, r)
 	if err != nil {
 		err.write(rs.parser.MimeType(), rs.parser, w)
 		return
 	}
 
-	if m, ok := rt.(UrlParams); ok {
-		m.SetUrlParams(mux.Vars(r))
-	}
-
-	httpErr := rt.Update()
+	httpErr := rt.Update(request)
 	if httpErr != nil {
 		httpErr.write(rs.parser.MimeType(), rs.parser, w)
 		return
@@ -357,13 +348,13 @@ func (rs *RouteSet) registerDeleteRoute(rt DeleteRoute) error {
 
 // defineUpdateRoute defines the structure used for update routes
 func (rs *RouteSet) defineDeleteRoute(w http.ResponseWriter, r *http.Request, rt DeleteRoute) {
-	err := rs.readBody(r.Body, rt)
+	request, err := rs.readBody(r.Body)
 	if err != nil {
 		err.write(rs.parser.MimeType(), rs.parser, w)
 		return
 	}
 
-	httpErr := rt.Delete()
+	httpErr := rt.Delete(request)
 	if httpErr != nil {
 		httpErr.write(rs.parser.MimeType(), rs.parser, w)
 		return
@@ -392,21 +383,42 @@ func (rs *RouteSet) registerRawRoute(rt RawRoute) error {
 	return nil
 }
 
+// doHttpOp wraps actions that must be called during each request
+func (rs *RouteSet) doHttpOp(routeController interface{}, r *http.Request) (interface{}, *HttpError) {
+	request, err := rs.readBody(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if m, ok := routeController.(UrlParams); ok {
+		m.SetUrlParams(mux.Vars(r))
+	}
+
+	if m, ok := routeController.(QueryParams); ok {
+		m.SetQueryParams(r.URL.Query())
+	}
+
+	return request, nil
+}
+
 // unmarshal unmarshals the byte slice into the provided Typer interface and writes an error back to the client, if the marshalling failed
-func (rs *RouteSet) unmarshal(bts []byte, typer Typer) *HttpError {
-	if err := rs.parser.Unmarshal(bts, typer.Type()); err != nil {
-		return &HttpError{
+func (rs *RouteSet) unmarshal(bts []byte) (interface{}, *HttpError) {
+	var data interface{}
+
+	if err := rs.parser.Unmarshal(bts, &data); err != nil {
+		return nil, &HttpError{
 			Status:    http.StatusInternalServerError,
 			ErrorCode: "",
 			Message:   err.Error(),
 		}
 	}
-	return nil
+
+	return data, nil
 }
 
 // marshal marshals the interface into a byte slice
 func (rs *RouteSet) marshal(data interface{}) ([]byte, *HttpError) {
-	bts, err := rs.parser.Marshal(data)
+	bts, err := rs.parser.Marshal(&data)
 	if err != nil {
 		return nil, &HttpError{
 			Status:    http.StatusInternalServerError,
@@ -417,15 +429,20 @@ func (rs *RouteSet) marshal(data interface{}) ([]byte, *HttpError) {
 	return bts, nil
 }
 
-func (rs *RouteSet) readBody(r io.Reader, rt Typer) *HttpError {
+func (rs *RouteSet) readBody(r io.Reader) (interface{}, *HttpError) {
 	bts, err := ioutil.ReadAll(r)
 	if err != nil {
-		return &HttpError{
+		return nil, &HttpError{
 			Status:    http.StatusInternalServerError,
 			ErrorCode: "",
 			Message:   err.Error(),
 		}
 	}
 
-	return rs.unmarshal(bts, rt)
+	// request might be empty, skip parsing and return nil instead
+	if len(bts) < 1 {
+		return nil, nil
+	}
+
+	return rs.unmarshal(bts)
 }
