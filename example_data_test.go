@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 type exampleParser struct{}
@@ -61,8 +62,12 @@ func (f *getExample) SetUrlParams(val map[string]string) {
 	return
 }
 
-func (f *getExample) WithLogger(lggbl Loggable) {
-	f.logger = lggbl
+func (g *getExample) SetQueryParams(args url.Values) {
+	return
+}
+
+func (g *getExample) WithLogger(lggbl Loggable) {
+	g.logger = lggbl
 }
 
 type getAllExample struct {
@@ -75,6 +80,10 @@ func (g *getAllExample) GetAll(requestData interface{}) ([]interface{}, *HttpErr
 }
 
 func (g *getAllExample) SetUrlParams(val map[string]string) {
+	return
+}
+
+func (g *getAllExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -95,6 +104,10 @@ func (p *postExample) SetUrlParams(val map[string]string) {
 	return
 }
 
+func (p *postExample) SetQueryParams(args url.Values) {
+	return
+}
+
 func (p *postExample) WithLogger(lggbl Loggable) {
 	p.logger = lggbl
 }
@@ -112,6 +125,10 @@ func (u *updateExample) SetUrlParams(val map[string]string) {
 	return
 }
 
+func (u *updateExample) SetQueryParams(args url.Values) {
+	return
+}
+
 func (u *updateExample) WithLogger(lggbl Loggable) {
 	u.logger = lggbl
 }
@@ -126,6 +143,10 @@ func (d *deleteExample) Delete(requestData interface{}) *HttpError {
 }
 
 func (d *deleteExample) SetUrlParams(val map[string]string) {
+	return
+}
+
+func (d *deleteExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -214,6 +235,10 @@ func (f *fullExample) RawRoutePath() string {
 }
 
 func (f *fullExample) SetUrlParams(val map[string]string) {
+	return
+}
+
+func (f *fullExample) SetQueryParams(args url.Values) {
 	return
 }
 
