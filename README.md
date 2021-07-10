@@ -87,14 +87,11 @@ type MyModel struct {
     Name string `json:"id"`
 }
 
-type Example struct {
-    MyModel
-}
+type Example struct {}
 
-func (e *Example) Get() (interface{}, *procroute.HttpError) {
+func (e *Example) Get(requestData interface{}) (interface{}, *HttpError) {
     // implement your business logic and return a value
-    
-    // the returned value is parsed into the defined format and available at the get endpoint
+
     return &MyModel{
         ID: 12,
         Name: "example",
@@ -122,17 +119,11 @@ type MyModel struct {
 }
 
 type Example struct {
-    MyModel
-
     urlParams map[string]string
     loggable procroute.Loggable
 }
 
-func (e *Example) Type() interface{} {
-    return e
-}
-
-func (e *Example) Get() (interface{}, *procroute.HttpError) {
+func (e *Example) Get(requestData interface{}) (interface{}, *HttpError) {
     // implement your business logic and return a value
     e.loggable.Info("id contains the value: %s", e.urlParams["id"])
 
