@@ -2,7 +2,6 @@ package procroute
 
 import (
 	"bytes"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -1916,99 +1915,90 @@ func TestRouteSet_marshal(t *testing.T) {
 	}
 }
 
-func TestRouteSet_readBody(t *testing.T) {
-	type fields struct {
-		basePath string
-		parser   Parser
-	}
+func TestRouteSet_doHttpOp(t *testing.T) {
 	type args struct {
-		r io.Reader
+		routeController interface{}
+		r               *http.Request
 	}
 	tests := []struct {
 		name      string
-		fields    fields
 		args      args
 		want      interface{}
 		wantError bool
 	}{
 		{
-			name: "test_1",
-			fields: fields{
-				basePath: "/",
-				parser:   &exampleParser{},
-			},
+			name: "with_data",
 			args: args{
-				r: bytes.NewBuffer([]byte("")),
-			},
-			want:      nil,
-			wantError: false,
-		},
-		{
-			name: "test_2",
-			fields: fields{
-				basePath: "/",
-				parser:   &exampleParser{},
-			},
-			args: args{
-				r: bytes.NewBuffer(nil),
-			},
-			want:      nil,
-			wantError: false,
-		},
-		{
-			name: "test_3",
-			fields: fields{
-				basePath: "/",
-				parser:   &exampleParser{},
-			},
-			args: args{
-				r: bytes.NewBuffer(httptest.NewRecorder().Body.Bytes()),
-			},
-			want:      nil,
-			wantError: false,
-		},
-		{
-			name: "test_4",
-			fields: fields{
-				basePath: "/",
-				parser:   &exampleParser{},
-			},
-			args: args{
-				r: bytes.NewBuffer([]byte(`{"name": "sample2", "value": 2}`)),
+				routeController: &fullExample{},
+				r: func() *http.Request {
+					jsonBytes := []byte(`{"foo": "bar"}`)
+
+					request, _ := http.NewRequest(
+						"get",
+						"http://localhost:8080/api/example",
+						bytes.NewReader(jsonBytes),
+					)
+
+					return request
+				}(),
 			},
 			want: map[string]interface{}{
-				"name":  "sample2",
-				"value": float64(2),
+				"foo": "bar",
 			},
 			wantError: false,
 		},
 		{
-			name: "test_5",
-			fields: fields{
-				basePath: "/",
-				parser:   &exampleParser{},
-			},
+			name: "with_empty_data",
 			args: args{
-				r: bytes.NewBuffer([]byte(`{"name": "sample2", "value": 2}`)),
+				routeController: &fullExample{},
+				r: func() *http.Request {
+					jsonBytes := []byte(``)
+
+					request, _ := http.NewRequest(
+						"get",
+						"http://localhost:8080/api/example",
+						bytes.NewReader(jsonBytes),
+					)
+
+					return request
+				}(),
 			},
-			want: map[string]interface{}{
-				"name":  "sample2",
-				"value": float64(2),
-			},
+			want:      nil,
 			wantError: false,
+		},
+		{
+			name: "with_wrong_data",
+			args: args{
+				routeController: &fullExample{},
+				r: func() *http.Request {
+					jsonBytes := []byte(`{`)
+
+					request, _ := http.NewRequest(
+						"get",
+						"http://localhost:8080/api/example",
+						bytes.NewReader(jsonBytes),
+					)
+
+					return request
+				}(),
+			},
+			want:      nil,
+			wantError: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rs := NewRouteSet(tt.fields.basePath, tt.fields.parser)
-			got, err := rs.readBody(tt.args.r)
+			rs := &RouteSet{
+				parser: &exampleParser{},
+			}
 
+			got, err := rs.doHttpOp(tt.args.routeController, tt.args.r)
 			if (err != nil) != tt.wantError {
-				t.Errorf("RouteSet.readBody() received error got = %v, want %v", err, tt.wantError)
+				t.Errorf("RouteSet.doHttpOp() received error \ngot = %+#v\nwant %+#v", err, tt.wantError)
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("RouteSet.readBody() is not equal \ngot = %+#v\nwant %+#v", got, tt.want)
+				t.Errorf("RouteSet.doHttpOp() is not equal\ngot = %+#v\nwant %+#v", got, tt.want)
 			}
 		})
 	}

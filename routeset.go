@@ -3,7 +3,6 @@ package procroute
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"path"
 
@@ -348,7 +347,7 @@ func (rs *RouteSet) registerDeleteRoute(rt DeleteRoute) error {
 
 // defineUpdateRoute defines the structure used for update routes
 func (rs *RouteSet) defineDeleteRoute(w http.ResponseWriter, r *http.Request, rt DeleteRoute) {
-	request, err := rs.readBody(r.Body)
+	request, err := rs.doHttpOp(rt, r)
 	if err != nil {
 		err.write(rs.parser.MimeType(), rs.parser, w)
 		return
@@ -385,9 +384,26 @@ func (rs *RouteSet) registerRawRoute(rt RawRoute) error {
 
 // doHttpOp handles actions that must be called for each request
 func (rs *RouteSet) doHttpOp(routeController interface{}, r *http.Request) (interface{}, *HttpError) {
-	request, err := rs.readBody(r.Body)
+	defer r.Body.Close()
+
+	bts, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		return nil, &HttpError{
+			Status:    http.StatusInternalServerError,
+			ErrorCode: "",
+			Message:   err.Error(),
+		}
+	}
+
+	var data interface{}
+
+	// request might be empty which is expected, so skip parsing and return nil instead
+	if len(bts) > 0 {
+		cdata, httpError := rs.unmarshal(bts)
+		if httpError != nil {
+			return nil, httpError
+		}
+		data = cdata
 	}
 
 	if m, ok := routeController.(UrlParams); ok {
@@ -398,7 +414,7 @@ func (rs *RouteSet) doHttpOp(routeController interface{}, r *http.Request) (inte
 		m.SetQueryParams(r.URL.Query())
 	}
 
-	return request, nil
+	return data, nil
 }
 
 // unmarshal unmarshals the byte slice into the provided Typer interface and writes an error back to the client, if the marshalling failed
@@ -427,22 +443,4 @@ func (rs *RouteSet) marshal(data interface{}) ([]byte, *HttpError) {
 		}
 	}
 	return bts, nil
-}
-
-func (rs *RouteSet) readBody(r io.Reader) (interface{}, *HttpError) {
-	bts, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, &HttpError{
-			Status:    http.StatusInternalServerError,
-			ErrorCode: "",
-			Message:   err.Error(),
-		}
-	}
-
-	// request might be empty, skip parsing and return nil instead
-	if len(bts) < 1 {
-		return nil, nil
-	}
-
-	return rs.unmarshal(bts)
 }
