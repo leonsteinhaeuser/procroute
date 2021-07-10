@@ -383,7 +383,7 @@ func (rs *RouteSet) registerRawRoute(rt RawRoute) error {
 	return nil
 }
 
-// doHttpOp wraps actions that must be called during each request
+// doHttpOp handles actions that must be called for each request
 func (rs *RouteSet) doHttpOp(routeController interface{}, r *http.Request) (interface{}, *HttpError) {
 	request, err := rs.readBody(r.Body)
 	if err != nil {
