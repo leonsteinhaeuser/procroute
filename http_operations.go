@@ -84,7 +84,6 @@ type GetAllRoutePath interface {
 // PostRoute provides the interface that must be implemented to create a Post endpoint.
 type PostRoute interface {
 	// Post represents the method that contains the business logic for creating a resource.
-	// Since the *Typer* interface is a prerequisite, the sent data can be read using the reference set in the Type method.
 	//
 	// Example
 	//  type Model struct {
@@ -120,7 +119,6 @@ type PostRouteRoutePath interface {
 // UpdateRoute provides the interface that must be implemented to create an Update endpoint.
 type UpdateRoute interface {
 	// Update represents the method that contains the business logic for updating a resource.
-	// Since the *Typer* interface is a prerequisite, the sent data can be read using the reference set in the Type method.
 	//
 	// Example
 	//  type Model struct {
@@ -156,7 +154,6 @@ type UpdateRouteRoutePath interface {
 // DeleteRoute provides the interface that must be implemented to create a Delete endpoint.
 type DeleteRoute interface {
 	// Delete represents the method that contains the business logic for deleting a resource.
-	// Since the *Typer* interface is a prerequisite, the sent data can be read using the reference set in the Type method.
 	//
 	// Example
 	//  type Model struct {
