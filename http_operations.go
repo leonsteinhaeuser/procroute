@@ -204,7 +204,7 @@ type RawRoute interface {
 
 // RawRouteRoutePath defines an optional child interface that is used to customize route path.
 type RawRouteRoutePath interface {
-	// RawRoutePath represents an optional method that can be set to define a custom path for the delete route.
+	// RawRoutePath represents an optional method that can be set to define a custom path for the raw route.
 	//
 	// Example:
 	//  type MyType struct {}
