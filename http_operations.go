@@ -1,6 +1,9 @@
 package procroute
 
-import "net/http"
+import (
+	"net/http"
+	"net/url"
+)
 
 // GetRoute provides the interface that must be implemented to create a Get endpoint.
 type GetRoute interface {
@@ -16,19 +19,14 @@ type GetRoute interface {
 	//  	Model
 	//  }
 	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	//
-	//  func (m *MyType) Get() (interface{}, *HttpError) {
+	//  func (m *MyType) Get(requestData interface{}) (interface{}, *HttpError) {
 	//      // do something
 	//  	return Model{
 	//			Name: "example",
 	//			URL: "example.url",
 	//      }, nil
 	//  }
-	Get() (interface{}, *HttpError)
-	Typer
+	Get(requestData interface{}) (interface{}, *HttpError)
 }
 
 // GetRoutePath defines an optional child interface that is used to customize route path.
@@ -58,11 +56,7 @@ type GetAllRoute interface {
 	//  	Model
 	//  }
 	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	//
-	//  func (m *MyType) GetAll() ([]interface{}, *HttpError) {
+	//  func (m *MyType) GetAll(requestData interface{}) ([]interface{}, *HttpError) {
 	//      // do something
 	//  	return []interface{}{
 	//          Model{
@@ -71,8 +65,7 @@ type GetAllRoute interface {
 	//          },
 	//      }, nil
 	//  }
-	GetAll() ([]interface{}, *HttpError)
-	Typer
+	GetAll(requestData interface{}) ([]interface{}, *HttpError)
 }
 
 // GetAllRoutePath defines an optional child interface that is used to customize route path.
@@ -103,17 +96,12 @@ type PostRoute interface {
 	//  	Model
 	//  }
 	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	//
-	//  func (m *MyType) Post() *HttpError {
+	//  func (m *MyType) Post(requestData interface{}) *HttpError {
 	//      // do something
-	//      fmt.Printf("%+v\n", m.Model)
+	//      fmt.Printf("%+v\n", requestData)
 	//  	return nil
 	//  }
-	Post() *HttpError
-	Typer
+	Post(requestData interface{}) *HttpError
 }
 
 // PostRouteRoutePath defines an optional child interface that is used to customize route path.
@@ -144,17 +132,12 @@ type UpdateRoute interface {
 	//  	Model
 	//  }
 	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	//
-	//  func (m *MyType) Update() *HttpError {
+	//  func (m *MyType) Update(requestData interface{}) *HttpError {
 	//      // do something
 	//      fmt.Printf("%+v\n", m.Model)
 	//  	return nil
 	//  }
-	Update() *HttpError
-	Typer
+	Update(requestData interface{}) *HttpError
 }
 
 // UpdateRouteRoutePath defines an optional child interface that is used to customize route path.
@@ -185,17 +168,12 @@ type DeleteRoute interface {
 	//  	Model
 	//  }
 	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	//
-	//  func (m *MyType) Delete() *HttpError {
+	//  func (m *MyType) Delete(requestData interface{}) *HttpError {
 	//      // do something
 	//      fmt.Printf("%+v\n", m.Model)
 	//  	return nil
 	//  }
-	Delete() *HttpError
-	Typer
+	Delete(requestData interface{}) *HttpError
 }
 
 // DeleteRouteRoutePath defines an optional child interface that is used to customize route path.
@@ -240,28 +218,6 @@ type RawRouteRoutePath interface {
 	RawRoutePath() string
 }
 
-// Typer represents an interface used to reference back to an object.
-// Make sure that the returned type is a pointer to the object.
-type Typer interface {
-	// Type represents a method to return a reference to the actual model sent during requests.
-	// The reference is used in POST, UPDATE and DELETE operations to set the actual type instead of an interface.
-	//
-	// Example
-	//  type Model struct {
-	//  	Name string `json:"name,omitempty"`
-	//  	URL  string `json:"url,omitempty"`
-	//  }
-	//
-	//  type MyType struct {
-	//  	Model
-	//  }
-	//
-	//  func (m *MyType) Type() interface{} {
-	//  	return &m.Model
-	//  }
-	Type() interface{}
-}
-
 // UrlParams represents an interface that must be implemented if the route works with url parameters.
 type UrlParams interface {
 	// SetUrlParam represents a method to pass url params that can be used later to identify resources.
@@ -275,4 +231,18 @@ type UrlParams interface {
 	//  	m.urlParams = args
 	//  }
 	SetUrlParams(args map[string]string)
+}
+
+type QueryParams interface {
+	// SetQueryParams represents a method to pass query params.
+	//
+	// Example:
+	//  type MyType struct {
+	//  	queryParams url.Values
+	//  }
+	//
+	//  func (m *MyType) SetQueryParams(args url.Values) {
+	//  	m.queryParams = args
+	//  }
+	SetQueryParams(args url.Values)
 }

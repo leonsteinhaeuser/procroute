@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 type exampleParser struct{}
@@ -49,44 +50,40 @@ type data struct {
 }
 
 type getExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (g *getExample) Get() (interface{}, *HttpError) {
-	return g.data, g.err
-}
-
-func (g *getExample) Type() interface{} {
-	return g.data
+func (g *getExample) Get(requestData interface{}) (interface{}, *HttpError) {
+	return requestData, g.err
 }
 
 func (f *getExample) SetUrlParams(val map[string]string) {
 	return
 }
 
-func (f *getExample) WithLogger(lggbl Loggable) {
-	f.logger = lggbl
+func (g *getExample) SetQueryParams(args url.Values) {
+	return
+}
+
+func (g *getExample) WithLogger(lggbl Loggable) {
+	g.logger = lggbl
 }
 
 type getAllExample struct {
-	data []data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (g *getAllExample) GetAll() ([]interface{}, *HttpError) {
-	return []interface{}{g.data}, g.err
-}
-
-func (g *getAllExample) Type() interface{} {
-	return g.data
+func (g *getAllExample) GetAll(requestData interface{}) ([]interface{}, *HttpError) {
+	return []interface{}{requestData}, g.err
 }
 
 func (g *getAllExample) SetUrlParams(val map[string]string) {
+	return
+}
+
+func (g *getAllExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -95,21 +92,19 @@ func (g *getAllExample) WithLogger(lggbl Loggable) {
 }
 
 type postExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (p *postExample) Post() *HttpError {
+func (p *postExample) Post(requestData interface{}) *HttpError {
 	return p.err
 }
 
-func (p *postExample) Type() interface{} {
-	return p.data
+func (p *postExample) SetUrlParams(val map[string]string) {
+	return
 }
 
-func (p *postExample) SetUrlParams(val map[string]string) {
+func (p *postExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -118,21 +113,19 @@ func (p *postExample) WithLogger(lggbl Loggable) {
 }
 
 type updateExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (u *updateExample) Update() *HttpError {
+func (u *updateExample) Update(requestData interface{}) *HttpError {
 	return u.err
 }
 
-func (u *updateExample) Type() interface{} {
-	return u.data
+func (u *updateExample) SetUrlParams(val map[string]string) {
+	return
 }
 
-func (u *updateExample) SetUrlParams(val map[string]string) {
+func (u *updateExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -141,21 +134,19 @@ func (u *updateExample) WithLogger(lggbl Loggable) {
 }
 
 type deleteExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (d *deleteExample) Delete() *HttpError {
+func (d *deleteExample) Delete(requestData interface{}) *HttpError {
 	return d.err
 }
 
-func (d *deleteExample) Type() interface{} {
-	return d.data
+func (d *deleteExample) SetUrlParams(val map[string]string) {
+	return
 }
 
-func (d *deleteExample) SetUrlParams(val map[string]string) {
+func (d *deleteExample) SetQueryParams(args url.Values) {
 	return
 }
 
@@ -164,8 +155,6 @@ func (d *deleteExample) WithLogger(lggbl Loggable) {
 }
 
 type rawExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
@@ -188,29 +177,27 @@ func (d *rawExample) WithLogger(lggbl Loggable) {
 }
 
 type fullExample struct {
-	data *data
-
 	err    *HttpError
 	logger Loggable
 }
 
-func (f *fullExample) Get() (interface{}, *HttpError) {
-	return f.data, f.err
+func (f *fullExample) Get(requestData interface{}) (interface{}, *HttpError) {
+	return requestData, f.err
 }
 
 func (f *fullExample) GetRoutePath() string {
 	return "/{id}"
 }
 
-func (f *fullExample) GetAll() ([]interface{}, *HttpError) {
-	return []interface{}{f.data}, f.err
+func (f *fullExample) GetAll(requestData interface{}) ([]interface{}, *HttpError) {
+	return []interface{}{requestData}, f.err
 }
 
 func (f *fullExample) GetAllRoutePath() string {
 	return "/all"
 }
 
-func (f *fullExample) Post() *HttpError {
+func (f *fullExample) Post(requestData interface{}) *HttpError {
 	return f.err
 }
 
@@ -218,7 +205,7 @@ func (f *fullExample) PostRoutePath() string {
 	return "/all"
 }
 
-func (f *fullExample) Update() *HttpError {
+func (f *fullExample) Update(requestData interface{}) *HttpError {
 	return f.err
 }
 
@@ -226,7 +213,7 @@ func (f *fullExample) UpdateRoutePath() string {
 	return "/all"
 }
 
-func (f *fullExample) Delete() *HttpError {
+func (f *fullExample) Delete(requestData interface{}) *HttpError {
 	return f.err
 }
 
@@ -251,8 +238,8 @@ func (f *fullExample) SetUrlParams(val map[string]string) {
 	return
 }
 
-func (f *fullExample) Type() interface{} {
-	return f.data
+func (f *fullExample) SetQueryParams(args url.Values) {
+	return
 }
 
 func (f *fullExample) WithLogger(lggbl Loggable) {

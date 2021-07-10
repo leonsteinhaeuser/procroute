@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/leonsteinhaeuser/procroute"
@@ -22,15 +23,46 @@ type MyType struct {
 
 // Define the type that implements the interfaces
 type Example struct {
-	MyType
-
-	urlParams map[string]string
-	logger    procroute.Loggable
+	urlParams   map[string]string
+	queryParams url.Values
+	logger      procroute.Loggable
 }
 
-func (e *Example) Get() (interface{}, *procroute.HttpError) {
-	e.logger.Info("get route hit")
-	return MyType{
+// Get implements the GetRoute interface
+func (e *Example) Get(requestData interface{}) (interface{}, *procroute.HttpError) {
+	e.logger.Info("received get request with data: %+#v", requestData)
+
+	if requestData != nil {
+		rd, ok := requestData.(MyType)
+		if !ok {
+			return MyType{
+				Name: "Hello",
+				URL:  "example.local",
+				Timings: Timings{
+					ID:        1,
+					CreatedAt: time.Now().UTC(),
+					UpdatedAt: time.Now().UTC(),
+					DeletedAt: time.Now().UTC(),
+				},
+			}, nil
+		}
+
+		return rd, nil
+	}
+
+	return requestData, nil
+}
+
+// GetRoutePath implements the GetRoutePath interface
+func (e *Example) GetRoutePath() string {
+	return "/{id}"
+}
+
+// GetAll implements the GetAllRoute interface
+func (e *Example) GetAll(requestData interface{}) ([]interface{}, *procroute.HttpError) {
+	e.logger.Info("received get all request with data: %+#v", requestData)
+
+	return []interface{}{MyType{
 		Name: "Hello",
 		URL:  "example.local",
 		Timings: Timings{
@@ -39,78 +71,83 @@ func (e *Example) Get() (interface{}, *procroute.HttpError) {
 			UpdatedAt: time.Now().UTC(),
 			DeletedAt: time.Now().UTC(),
 		},
-	}, nil
+	},
+		MyType{
+			Name: "2-Hello",
+			URL:  "2.example.local",
+			Timings: Timings{
+				ID:        2,
+				CreatedAt: time.Now().UTC(),
+				UpdatedAt: time.Now().UTC(),
+				DeletedAt: time.Now().UTC(),
+			},
+		}}, nil
 }
 
-func (e *Example) GetRoutePath() string {
+// GetAllRoutePath implements the GetAllRoutePath interface
+func (e *Example) GetAllRoutePath() string {
+	return ""
+}
+
+// Post implements the PostRoute interface
+func (e *Example) Post(requestData interface{}) *procroute.HttpError {
+	e.logger.Info("received post request with data: %+#v", requestData)
+	return nil
+}
+
+// PostRoutePath implements the PostRouteRoutePath interface
+func (e *Example) PostRoutePath() string {
+	return ""
+}
+
+// Update implements the UpdateRoute interface
+func (e *Example) Update(requestData interface{}) *procroute.HttpError {
+	e.logger.Info("received update request with data: %+#v", requestData)
+	return nil
+}
+
+// UpdateRoutePath implements the UpdateRouteRoutePath interface
+func (e *Example) UpdateRoutePath() string {
 	return "/{id}"
 }
 
-func (e *Example) GetAll() ([]interface{}, *procroute.HttpError) {
-	e.logger.Info("get all route hit")
-	return []interface{}{
-		MyType{
-			Name: "test1",
-			URL:  "test1",
-			Timings: Timings{
-				ID:        1,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-				DeletedAt: time.Now(),
-			},
-		},
-		MyType{
-			Name: "test2",
-			URL:  "test2",
-			Timings: Timings{
-				ID:        2,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-				DeletedAt: time.Now(),
-			},
-		},
-	}, nil
-}
-
-func (e *Example) Post() *procroute.HttpError {
-	e.logger.Info("post route hit: %+v", e.MyType)
+// Delete implements the DeleteRoute interface
+func (e *Example) Delete(requestData interface{}) *procroute.HttpError {
+	e.logger.Info("received delete request with data: %+#v", requestData)
 	return nil
 }
 
-func (e *Example) Update() *procroute.HttpError {
-	e.logger.Info("update route hit: %+v", e.MyType)
-	return nil
-}
-
-func (e *Example) Delete() *procroute.HttpError {
-	e.logger.Info("delete route hit: %+v", e.MyType)
-	return nil
-}
-
+// DeleteRoutePath implements the DeleteRouteRoutePath interface
 func (e *Example) DeleteRoutePath() string {
 	return "/{id}"
 }
 
+// Raw implements the RawRoute interface
 func (e *Example) Raw(w http.ResponseWriter, r *http.Request) {
 	e.logger.Debug("URL values: %+v", r.URL.Query())
 }
 
+// HttpMethods implements the RawRoute interface
 func (e *Example) HttpMethods() []string {
 	return []string{"GET", "OPTIONS"}
 }
 
+// RawRoutePath implements the RawRouteRoutePath interface
 func (e *Example) RawRoutePath() string {
 	return "/{id}/raw"
 }
 
+// SetUrlParams implements the UrlParams interface
 func (e *Example) SetUrlParams(args map[string]string) {
 	e.urlParams = args
 }
 
-func (e *Example) Type() interface{} {
-	return e
+// SetQueryParams implements the QueryParams interface
+func (e *Example) SetQueryParams(args url.Values) {
+	e.queryParams = args
 }
 
+// WithLogger implements the WithLogger interface
 func (e *Example) WithLogger(lggbl procroute.Loggable) {
 	e.logger = lggbl
 }
